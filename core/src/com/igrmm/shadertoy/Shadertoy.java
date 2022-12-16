@@ -6,25 +6,23 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class Shadertoy extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture img1, img2;
 	ShaderProgram shader;
-	float scale = 6f;
+	float scale = 1f;
 	Vector2 pos = new Vector2();
-	Vector3 texSize;
+	Vector2 texSize;
 
 	@Override
 	public void create() {
 		batch = new SpriteBatch();
-		img1 = new Texture("img.png");
-		img2 = new Texture("img.png");
+		img1 = new Texture("badlogic.jpg");
+		img2 = new Texture("badlogic.jpg");
 		img1.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-		img1.setAnisotropicFilter(16f);
-		texSize = new Vector3(img1.getWidth(), img1.getHeight(), scale);
+		texSize = new Vector2(img1.getWidth(), img1.getHeight());
 		shader = new ShaderProgram(batch.getShader().getVertexShaderSource(), Gdx.files.internal("shader.frag").readString());
 		if (!shader.isCompiled()) {
 			System.out.println(shader.getLog());
@@ -34,13 +32,18 @@ public class Shadertoy extends ApplicationAdapter {
 
 	@Override
 	public void render() {
-		pos.x += 7 * Gdx.graphics.getDeltaTime();
+		if (pos.x < Gdx.graphics.getWidth()) {
+			pos.x += 7 * Gdx.graphics.getDeltaTime();
+		} else {
+			Gdx.app.exit();
+		}
 
 		ScreenUtils.clear(1, 0, 0, 1);
 		batch.setShader(shader);
 		shader.bind();
 		shader.setUniformf("u_pos", pos);
 		shader.setUniformf("u_texSize", texSize);
+		shader.setUniformf("u_scale", scale);
 		batch.begin();
 		batch.draw(img1, pos.x, pos.y, img1.getWidth() * scale, img1.getHeight() * scale);
 		batch.end();
@@ -48,6 +51,8 @@ public class Shadertoy extends ApplicationAdapter {
 		batch.begin();
 		batch.draw(img2, pos.x, pos.y + img2.getHeight() * scale, img2.getWidth() * scale, img2.getHeight() * scale);
 		batch.end();
+
+		Gdx.graphics.setTitle(Gdx.graphics.getFramesPerSecond() + "");
 	}
 
 	@Override
